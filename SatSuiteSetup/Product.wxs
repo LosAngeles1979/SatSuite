@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <!-- DO NOT SET Product Id="*" IN THE NEXT STATEMENT -->
+  <!-- BECAUSE IT LEADS TO DUPLICATE PRODUCT INSTALLATIONS -->
+  <!-- AND CAUSES THE START MENU SHORTCUT TO REMAIN BEHIND -->
+  <!-- DUE TO A BAD REF COUNT -->
+  <!-- Use Tools / Create GUID to create, copy, and paste a product GUID -->
+  <!-- GDL 6/25/2020 -->
+  <Product Id="{3A6A02E5-72E9-4384-A0A4-5CD568774B57}" Name="SatSuite App" Language="1033" Version="1.0.0.0" Manufacturer="FreeAndEasy Tech"
+           UpgradeCode="cd138457-a119-462f-966b-0c8255673a72">
+    <Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
+
+    <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
+    <MediaTemplate />
+
+    <UIRef Id="WixUI_Mondo"/>
+
+  <!-- LESSON LEARNED:  In order to customize the text of the standard "lorem ipsum" license,
+       add the WixVariable below.  The location of the rtf file as specified below would be 
+       in the same directory as the setup wixproj project file.
+
+       Gary Ledbetter   6/25/2020 -->
+       <WixVariable Id="WixUILicenseRtf" Value="My License Agreement.rtf" />
+
+    
+    <!-- LESSON LEARNED:
+         The <UI> block immediately below has the effect of
+         eliminating the "lorem ipsum" license file dialog
+         that comes with the built-in WixUI_Mondo.
+         This is important because we display our custom license dialog
+         as part of the Bootstrapper.  So this avoids confusion and duplication.
+         
+         Taken from the following website:
+         https://stackoverflow.com/questions/13045658/removing-license-dialog
+         
+         GDL 6/25/2020
+    -->
+
+    <!--
+    <UI>
+      <UIRef Id ="WixUI_Mondo" />
+      <Publish Dialog="WelcomeDlg"
+               Control="Next"
+               Event="NewDialog"
+               Value="SetupTypeDlg"
+               Order="2">1</Publish>
+      <Publish Dialog="SetupTypeDlg"
+               Control="Back"
+               Event="NewDialog"
+               Value="WelcomeDlg"
+               Order="2">1</Publish>
+    </UI>
+    -->
+
+    
+    <!-- ============================================================================= -->
+    <!-- *** Note that if you use <UIRef Id="WixUI_Minimal"/>  -->
+    <!-- then there is no way to eliminate the lorum ipsum license file dialog -->
+    <!-- because the setup begins with that dialog, and shows no others. -->
+    <!-- So, the <UI> </UI> block is N/A. -->
+    <!-- ============================================================================= -->
+    <!-- *** Note that if you use <UIRef Id="WixUI_FeatureTree"/>  -->
+    <!-- then you must specify the following <UI> </UI> block: -->
+      <!--
+      <UI>
+        <UIRef Id ="WixUI_FeatureTree" />
+        <Publish Dialog="WelcomeDlg"
+                 Control="Next"
+                 Event="NewDialog"
+                 Value="FeaturesDlg"
+                 Order="2">1</Publish>
+        <Publish Dialog="FeaturesDlg"
+                 Control="Back"
+                 Event="NewDialog"
+                 Value="WelcomeDlg"
+                 Order="2">1</Publish>
+      </UI>
+      -->
+    <!-- ============================================================================= -->
+    <!-- *** Note that if you use  <UIRef Id="WixUI_InstallDir"/>  -->
+    <!-- then you must also define the following propertY or it will give a run-time error:
+    <Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER" />
+    AND you must also specify the following <UI> </UI> block:
+      <UI>
+        <UIRef Id ="WixUI_InstallDir" />
+        <Publish Dialog="WelcomeDlg"
+                 Control="Next"
+                 Event="NewDialog"
+                 Value="InstallDirDlg"
+                 Order="2">1</Publish>
+        <Publish Dialog="InstallDirDlg"
+                 Control="Back"
+                 Event="NewDialog"
+                 Value="WelcomeDlg"
+                 Order="2">1</Publish>
+      </UI>
+      -->
+    <!-- ============================================================================= -->    
+    <!-- *** Note that if you use <UIRef Id="WixUI_Advanced"/>  -->
+    <!-- then you must also define the following properties or it will not compile:
+    <Property Id="ApplicationFolderName" Value="My Application Folder" />
+    <Property Id="WixAppFolder" Value="WixPerMachineFolder" />
+    AND there is no way to eliminate the lorum ipsum license file dialog
+    because the setup begins with that dialog. -->
+    <!-- So, the <UI> </UI> block is N/A. -->
+    <!-- ============================================================================= -->
+    
+
+    <!-- *** BEGIN CUSTOM ACTIONS SECTION -->
+    
+    <!-- Custom actions are written in C# in this DLL
+         PROPER WAY to do this is right-click the solution, or folder, and then:
+         Add / New Project / C# Custom Action Project for WiX v3
+         ESPECIALLY NOTE that the output will be something like 
+         MyProjectName.CA.dll and *not* MyProjectName.dll -->
+    <Binary Id="MyCustomActions"
+            SourceFile="$(var.CASayHello.TargetDir)CASayHello.CA.dll">
+    </Binary>
+
+    <!-- NOTE: The CustomAction BinaryKey must be the same as the Binary Id above! -->
+    <CustomAction Id="DisplayHelloDialog"
+          BinaryKey="MyCustomActions"
+          DllEntry="SayHello"
+          Execute="deferred"
+          Impersonate="yes"
+          Return="ignore"
+          HideTarget="no"/>
+
+    <InstallExecuteSequence>
+      <Custom Action="DisplayHelloDialog" After="InstallInitialize"/>
+    </InstallExecuteSequence>
+
+    <DirectoryRef Id="ApplicationProgramsFolder">
+      <Component Id="ApplicationShortcut" Guid="{7E4F7ED6-7AC5-4BD8-AEC9-3B45FEE705A8}">
+        <Shortcut Id="ApplicationStartMenuShortcut"
+                  Name="SatSuite App"
+                  Description="Best App Ever"
+                  Target="[INSTALLFOLDER]SatSuite.exe"
+                  WorkingDirectory="INSTALLFOLDER"
+                  Advertise="no" />
+        <RemoveFolder Id="ApplicationProgramsFolder" On="uninstall"/>
+        <RegistryValue Root="HKCU" Key="Software\FreeAndEasy Tech\SatSuite App"
+                       Name="installed" Type="integer" Value="1" KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+
+    <Feature Id="ProductFeature" Title="Main Feature" Level="1">
+      <ComponentGroupRef Id="ProductComponents" />
+      <ComponentRef Id="ApplicationShortcut"/>
+    </Feature>
+  </Product>
+
+	<Fragment>
+		<Directory Id="TARGETDIR" Name="SourceDir">
+			<Directory Id="ProgramFilesFolder">
+        <Directory Id="INSTALLFOLDER" Name="SatSuite">
+          <Directory Id="HeatFilesFolder" Name="Harvested" />
+        </Directory>
+			</Directory>
+      <Directory Id="ProgramMenuFolder">
+        <Directory Id="ApplicationProgramsFolder" Name="SatSuite" />
+      </Directory>
+		</Directory>
+	</Fragment>
+
+	<Fragment>
+		<ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">
+			<Component Id="ProductComponent">
+        				<File Source="$(var.SatSuite.TargetPath)" />
+			</Component>
+      <ComponentGroupRef Id="HeatGenerated" />
+      <Component Id="MyRegKey1" Guid="{9A3F20E3-ECB9-472E-BD61-EC56188A0B3A}">
+        <RegistryValue Root="HKCU" Key="Software\FreeAndEasy Tech\SatSuite App\Params"
+                       Name="Metric1" Type="integer" Value="10" KeyPath="yes" />
+      </Component>
+		</ComponentGroup>
+	</Fragment>
+</Wix>

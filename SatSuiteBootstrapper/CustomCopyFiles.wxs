@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
+     xmlns:bal="http://schemas.microsoft.com/wix/BalExtension"
+     xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
+  <Fragment Id="CustomCopySomeFilesPackageGroup">
+
+    <!-- We do not need to use a "Detection Condition" for this; we're just running a batch file.
+    <util:FileSearch Id="FindCustomCopySomeFiles" Variable="MYFILEEXISTS" Result="exists"
+                         Path="[ProgramFiles64Folder]MyApp\MyApp.exe"/>
+    -->
+    
+    <PackageGroup Id="CustomCopySomeFilesPackageGroup">
+      <ExePackage Id="CustomCopyFilesScript"  
+                  DisplayName="Custom Copy Files" 
+                  SourceFile="Scripts\CustomCopyFiles.bat"
+                  Name="Scripts\CustomCopyFiles.bat"
+                  InstallCommand="cmd.exe /C "
+                  RepairCommand="cmd.exe /C "
+                  Permanent="no"
+                  Compressed="no"
+                  Vital="no" />
+    </PackageGroup>
+  </Fragment>
+</Wix>

@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
+     xmlns:bal="http://schemas.microsoft.com/wix/BalExtension"
+     xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
+	<Bundle Name="SatSuite" Version="1.0.0.0" Manufacturer="FreeAndEasy Tech" 
+          UpgradeCode="24e9b9e7-1e2a-47a6-9b1f-3795c70c4dd3">
+
+    <!-- BIG DISCOVERY
+          Using "LicenseFile" in the bal:WixStandardBootstrapperApplication clause
+          below to specify a path to the source *.rtf WILL NOT show the license!!
+          Instead, use "LicenseUrl", and specify the file as a Payload
+          to BootstrapperApplicationRef.
+            
+          Also - DON'T use RtfLargeLicense to display the license file, it's U-G-L-Y!
+          Use the HyperlinkSidebarLicense instead (with LicenseUrl as described above).
+  
+          You can use an *.htm file as well as an *.rtf, but Microsoft Edge
+          might not be able to open it (especially if it's launched from a 
+          network location).  It's better to use an *.rtf, and the worst that can happen
+          is the user will need to select which app (NotePad) to open it with.
+            
+          Gary D. Ledbetter   August 13, 2019    
+      -->
+
+    <BootstrapperApplicationRef Id="WixStandardBootstrapperApplication.HyperlinkSidebarLicense">
+      <Payload SourceFile="Resources\My License Agreement.rtf"/>
+      <bal:WixStandardBootstrapperApplication
+               ShowFilesInUse="yes"
+               ShowVersion="yes"
+               LicenseUrl="My License Agreement.rtf"
+               SuppressOptionsUI="yes"
+               LogoFile="Resources\LogoFileGENERIC.bmp"
+               LogoSideFile="Resources\LogoSideFileGENERIC.bmp"
+               ThemeFile="Resources\CustomHyperlinkSidebarTheme.xml"
+               LocalizationFile="Resources\CustomHyperlinkSidebarTheme.wxl" />
+    </BootstrapperApplicationRef>
+
+		<Chain>
+      <!--Put all the *.msi, *.exe, etc. packages here!
+      They are order-dependent, top-to-bottom
+      unless you use the After="" attribute.
+      Therefore, list the prerequisites (if any) first. -->
+
+      <!-- Visual C++ Redistributables can go here!
+      <PackageGroupRef Id="VC12x86CRT" />
+      <PackageGroupRef Id="VC14x86CRT" />
+      
+      <RollbackBoundary />
+      -->
+      
+      <!-- If needed, install .Net 4.7.2 prior to any program package that uses it.
+           Doing so will avoid the need for an auto-reboot via the /norestart parameter.
+      <PackageGroupRef Id="NetFramework472" />
+      -->
+
+      <MsiPackage SourceFile="$(var.SatSuiteSetup.TargetPath)"
+                  DisplayInternalUI="yes" Compressed="no" Vital="yes"
+                  Name="SatSuite App\SatSuiteSetup.msi" />
+
+      <!-- You can include an InstallShield *.exe setup project -->  
+      <PackageGroupRef Id="ApplesPackageGroup"/>
+
+      <!-- You can include an InstallShield *.msi setup project -->  
+      <PackageGroupRef Id="OrangesPackageGroup"/>
+      
+      <!--Neat discovery: you can have a "package group" that calls a batch file. 
+       This avoids using custom actions.   See the link below. 
+       https://stackoverflow.com/questions/18901452/execute-script-between-msi-packages-during-bootstrapper 
+       GDL 8/13/2019 -->
+      <PackageGroupRef Id="CustomCopySomeFilesPackageGroup"/>
+		</Chain>
+	</Bundle>
+</Wix>
