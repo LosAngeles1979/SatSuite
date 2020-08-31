@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <!-- I added this line directly on GitHub for practice "syncing" with the git repo on my computer -->
   <!-- DO NOT SET Product Id="*" IN THE NEXT STATEMENT -->
   <!-- BECAUSE IT LEADS TO DUPLICATE PRODUCT INSTALLATIONS -->
   <!-- AND CAUSES THE START MENU SHORTCUT TO REMAIN BEHIND -->
